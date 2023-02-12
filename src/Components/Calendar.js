@@ -9,6 +9,9 @@ import Stack from '@mui/material/Stack';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import Paper from '@mui/material/Paper';
 
+import { useDispatch, useSelector } from "react-redux";
+import { updateNameByHour, setBothNameByHour, resetNameByHour, updateNameByHourBackend, convertSelectedDate} from "../Redux/reservations"
+
 import InputAdornment from '@mui/material/InputAdornment';
 import ClearIcon from '@mui/icons-material/Clear';
 
@@ -53,7 +56,6 @@ const DAILY_HOUR_LIST = [
         startTime: "17:00:00",
         "endTime": "18:00:00"
     },
-
 ]
 
 const parseReservation = (listeObjet) => {
@@ -68,7 +70,6 @@ const parseReservation = (listeObjet) => {
 }
 
 const addItem = async (newObj) => {
-    console.log(newObj)
     try {
         await axios.post("http://localhost:5500/reservation/put-item",
             newObj)
@@ -86,19 +87,15 @@ const deleteItem = async (id) => {
 }
 
 const Calendar = () => {
-    const [listItems, setListItems] = useState([]);
-    const [listItemsBackend, setListItemsBackend] = useState([]);
+    const dispatch = useDispatch();
+    const { nameByHour, nameByHourBackend, selectedDate } = useSelector((state) => state.reservations);
 
-    const [value, setValue] = React.useState(new Date().toISOString().split('T')[0]);
     const handleChange = (newValue) => {
         const jsDate = new Date(newValue)
         if (!isNaN(jsDate.getTime())) {
-            setValue(jsDate.toISOString().split('T')[0])
+            dispatch(convertSelectedDate(jsDate.toISOString().split('T')[0]))
         };
     };
-
-    console.log(value)
-    console.log(listItems)
 
 
     useEffect(() => {
@@ -106,16 +103,15 @@ const Calendar = () => {
             try {
                 const res = await axios.post("http://localhost:5500/reservation/get-items",
                     {
-                        "date": value
+                        "date": selectedDate
                     })
-                setListItems(parseReservation(res.data));
-                setListItemsBackend(parseReservation(res.data));
+                dispatch(setBothNameByHour(parseReservation(res.data)))
             } catch (err) {
                 console.log(err);
             }
         }
         getItemList()
-    }, [value]);
+    }, [selectedDate]);
 
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -128,7 +124,7 @@ const Calendar = () => {
                     <DesktopDatePicker
                         label="Date desktop"
                         inputFormat="YYYY-MM-DD"
-                        value={value.concat('T00:00:00.000Z')}
+                        value={selectedDate.concat('T00:00:00.000Z')}
                         onChange={handleChange}
                         renderInput={(params) => <TextField {...params} />}
                     />
@@ -165,23 +161,26 @@ const Calendar = () => {
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                             }}>
-                            <TextField id="outlined-basic" label={hour.startTime.substring(0, 5)} variant="outlined" onChange={e =>
-                                setListItems({
-                                    ...listItems,
-                                    [hour.startTime]: e.target.value
-                                })}
-                                value={listItems[hour.startTime] || ''}
+                            <TextField id="outlined-basic" label={hour.startTime.substring(0, 5)} variant="outlined" onChange={e => {
+                                dispatch(updateNameByHour({
+                                    "startTime": hour.startTime,
+                                    "name": e.target.value
+                                }))
+                            }}
+                                value={nameByHour[hour.startTime] || ''}
                                 sx={{
                                     width: 'calc(100% - 80px)',
                                 }}
                                 InputLabelProps={{ shrink: true }}
                                 InputProps={{
                                     endAdornment:
-                                        <InputAdornment>
-                                            <ClearIcon onClick={() => setListItems({
-                                                ...listItems,
-                                                [hour.startTime]: ""
-                                            })} />
+                                        <InputAdornment position='end'>
+                                            <ClearIcon onClick={() => {
+                                                dispatch(updateNameByHour({
+                                                    "startTime": hour.startTime,
+                                                    "name": ""
+                                                }))
+                                            }} />
                                         </InputAdornment>,
                                 }}
                             />
@@ -198,50 +197,40 @@ const Calendar = () => {
                                     style={{
                                         color: 'white',
                                         fontWeight: '40',
-                                        backgroundColor: listItems[hour.startTime] !== listItemsBackend[hour.startTime] ? '#1E90FF' : 'lightgray',
+                                        backgroundColor: nameByHour[hour.startTime] !== nameByHourBackend[hour.startTime] ? '#1E90FF' : 'lightgray',
                                         height: "25px",
                                         fontSize: "14px",
                                     }}
                                     variant="contained"
-                                    disabled={listItems[hour.startTime] === listItemsBackend[hour.startTime]}
+                                    disabled={nameByHour[hour.startTime] === nameByHourBackend[hour.startTime]}
                                     onClick={() => {
-                                        setListItems({
-                                            ...listItems,
-                                            [hour.startTime]: listItemsBackend[hour.startTime]
-                                        })
-
-                                    }
-                                    }>Reset
+                                        dispatch(resetNameByHour(hour.startTime))
+                                    }}>Reset
                                 </Button>
 
                                 <Button
                                     style={{
                                         color: 'white',
                                         fontWeight: '40',
-                                        backgroundColor: listItems[hour.startTime] !== listItemsBackend[hour.startTime] ? '#1E90FF' : 'lightgray',
+                                        backgroundColor: nameByHour[hour.startTime] !== nameByHourBackend[hour.startTime] ? '#1E90FF' : 'lightgray',
                                         height: "25px",
                                         fontSize: "14px",
                                     }}
                                     variant="contained"
-                                    disabled={listItems[hour.startTime] === listItemsBackend[hour.startTime]}
+                                    disabled={nameByHour[hour.startTime] === nameByHourBackend[hour.startTime]}
                                     onClick={() => {
-                                        if (listItems[hour.startTime] !== "") {
+                                        if (nameByHour[hour.startTime] !== "") {
                                             addItem({
                                                 startTime: hour.startTime,
                                                 endTime: hour.endTime,
-                                                name: listItems[hour.startTime] || '',
-                                                date: value
+                                                name: nameByHour[hour.startTime] || '',
+                                                date: selectedDate
                                             })
-
                                         }
                                         else {
-                                            deleteItem(value + 'T' + hour.startTime + '.000Z')
+                                            deleteItem(selectedDate + 'T' + hour.startTime + '.000Z')
                                         }
-                                        setListItemsBackend({
-                                            ...listItemsBackend,
-                                            [hour.startTime]: listItems[hour.startTime]
-                                        })
-
+                                        dispatch(updateNameByHourBackend(hour.startTime))
                                     }
                                     }>Save
                                 </Button>
