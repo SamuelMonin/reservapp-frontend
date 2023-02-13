@@ -7,9 +7,7 @@ import Header from './Components/Header';
 function App() {
 
   const [display, setDisplay] = useState("")
-  const [connected, setConnected] = useState("")
-  const [loginUserName, setLoginUserName] = useState("")
-  const [open, setOpen] = React.useState(true)
+
 
 
 
@@ -26,9 +24,9 @@ function App() {
     }}>
 
 
-      <Header connected={connected} setDisplay={setDisplay} setConnected={setConnected} loginUserName={loginUserName} setLoginUserName={setLoginUserName} />
+      <Header setDisplay={setDisplay} />
 
-      <Body open={open} setOpen={setOpen} display={display} setDisplay={setDisplay} setConnected={setConnected} loginUserName={loginUserName} setLoginUserName={setLoginUserName} />
+      <Body display={display} setDisplay={setDisplay} />
 
 
     </div>

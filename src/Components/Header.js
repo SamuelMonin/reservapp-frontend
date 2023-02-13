@@ -1,5 +1,7 @@
 import React from "react";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setIsConnected } from "../Redux/appSlice"
 
 import { Typography } from "@mui/material";
 import { styled } from '@mui/system';
@@ -17,7 +19,9 @@ const CustomButton = styled(Typography)({
 
 
 const Header = (props) => {
+    const { headerUserName, isConnected } = useSelector((state) => state.app);
 
+    const dispatch = useDispatch();
 
     return (
 
@@ -63,15 +67,15 @@ const Header = (props) => {
 
                 <CustomButton
                     onClick={() => {
-                        if (props.connected === "true") {
+                        if (isConnected === true) {
                             props.setDisplay("")
-                            props.setConnected("false")
+                            dispatch(setIsConnected(false))
                         } else {
                             props.setDisplay("register")
                         }
                     }
                     }
-                >{props.connected === "true" ? "Logout" : 'Register'}
+                >{isConnected === true ? "Logout" : 'Register'}
                 </CustomButton>
 
                 <CustomButton
@@ -79,7 +83,7 @@ const Header = (props) => {
                         props.setDisplay("login")
                     }
                     }
-                >{props.connected === "true" ? props.loginUserName : 'Login'}
+                >{isConnected === true ? headerUserName: 'Login'}
                 </CustomButton>
 
             </div>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import axios from 'axios';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -111,7 +111,7 @@ const Calendar = () => {
             }
         }
         getItemList()
-    }, [selectedDate]);
+    }, [dispatch, selectedDate]);
 
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}>

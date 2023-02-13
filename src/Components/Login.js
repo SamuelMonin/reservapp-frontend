@@ -3,6 +3,9 @@ import { useState } from 'react';
 
 import axios from 'axios';
 
+import { useDispatch } from "react-redux";
+import { setHeaderUserName, setIsConnected } from "../Redux/appSlice"
+
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -14,17 +17,21 @@ import PersonIcon from '@mui/icons-material/Person';
 
 const Login = (props) => {
 
+
+    const dispatch = useDispatch();
+
+    const [loginUserName, setLoginUserName] = useState("")
     const [loginPassword, setLoginPassword] = useState("")
 
     const getUser = async () => {
         try {
             const res = await axios.post("http://localhost:5500/user/get-items",
                 {
-                    "userName": props.loginUserName,
+                    "userName": loginUserName,
                     "password": loginPassword
                 })
             props.setDisplay("")
-            props.setConnected(res.data.userExists.toString())
+            dispatch(setIsConnected(res.data.userExists))
         } catch (err) {
             console.log(err);
         }
@@ -48,7 +55,10 @@ const Login = (props) => {
                         </InputAdornment>
                     }
                     label="Password"
-                    onChange={e => props.setLoginUserName(e.target.value)
+                    onChange={(e) => {
+                        setLoginUserName(e.target.value)
+                        dispatch(setHeaderUserName(e.target.value))
+                        }
                     }
                 />
             </FormControl>
@@ -75,7 +85,9 @@ const Login = (props) => {
                     backgroundColor: '#1E90FF',
                     fontSize: "14px",
                 }}
-                onClick={() => getUser()
+                onClick={() => {
+                    getUser()
+                }
                 }
             >Login</Button>
 

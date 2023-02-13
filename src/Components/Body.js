@@ -14,7 +14,7 @@ const Body = (props) => {
 
     if (props.display === "login") {
         return (
-            <Login setConnected={props.setConnected} loginUserName={props.loginUserName} setLoginUserName={props.setLoginUserName} setDisplay={props.setDisplay} />
+            <Login setDisplay={props.setDisplay} />
         )
     }
 
